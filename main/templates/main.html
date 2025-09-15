@@ -1,5 +1,46 @@
-<p>{{ app_name }}</p>
-<h5>Name: </h5>
-<p>{{ name }}</p>
-<h5>Class: </h5>
-<p>{{ class }}</p>
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>{{ app_name }}</title>
+  <style>
+    body{font-family:system-ui,Arial,sans-serif;max-width:980px;margin:24px auto;padding:0 16px}
+    .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px}
+    .card{border:1px solid #e5e7eb;border-radius:12px;padding:12px}
+    img{width:100%;height:150px;object-fit:cover;border-radius:8px}
+    .muted{color:#6b7280}
+    .tag{font-size:.8rem;padding:2px 6px;border-radius:6px;background:#eef}
+  </style>
+</head>
+<body>
+  <h1>{{ app_name }}</h1>
+  <p class="muted">By {{ student_name }} — {{ student_class }}</p>
+
+  <p>
+    <a href="{% url 'main:add_product' %}">Add Product</a>
+    &nbsp;|&nbsp; Data:
+    <a href="{% url 'main:show_json' %}">JSON</a> •
+    <a href="{% url 'main:show_xml' %}">XML</a>
+  </p>
+
+  {% if products %}
+    <div class="grid">
+      {% for p in products %}
+      <div class="card">
+        <img src="{{ p.thumbnail }}" alt="{{ p.name }}">
+        <h3>{{ p.name }}</h3>
+        <p><span class="tag">{{ p.category }}</span>{% if p.is_featured %} • <strong>Featured</strong>{% endif %}</p>
+        <p>Price: Rp{{ p.price }}</p>
+        <p>
+          <a href="{% url 'main:show_detail' p.id %}">Detail</a> ·
+          <a href="{% url 'main:show_json_by_id' p.id %}">JSON</a> ·
+          <a href="{% url 'main:show_xml_by_id' p.id %}">XML</a>
+        </p>
+      </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <p>No products yet. Add one!</p>
+  {% endif %}
+</body>
+</html>
