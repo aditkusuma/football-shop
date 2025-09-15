@@ -32,6 +32,9 @@ DEBUG = True
 
 ALLOWED_HOSTS = ["localhost", "127.0.0.1", "raditya-ikhlas-footballshop.pbp.cs.ui.ac.id"]
 
+CSRF_TRUSTED_ORIGINS = [
+    "https://raditya-ikhlas-footballshop.pbp.cs.ui.ac.id"
+]
 
 # Application definition
 
@@ -60,7 +63,7 @@ ROOT_URLCONF = 'football_shop.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [BASE_DIR / 'templates'], # Tambahkan konten baris ini
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -144,8 +147,3 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-
-# football_shop/settings.py
-APP_NAME = "Chelsea Football Shop"    
-STUDENT_NAME = "Raditya Ikhlas Kusuma"
-STUDENT_CLASS = "PBP KKI 2025"        
