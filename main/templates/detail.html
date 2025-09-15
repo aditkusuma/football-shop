@@ -1,5 +1,4 @@
 {% extends 'base.html' %}
-{% load humanize %}
 {% block content %}
 
 <p><a href="{% url 'main:show_main' %}"><button>← Back to Product List</button></a></p>
@@ -8,7 +7,7 @@
 <p>
   <b>{{ product.category }}</b>
   {% if product.is_featured %} | <b>Featured</b>{% endif %}
-  | <b>Price:</b> Rp{{ product.price|intcomma }}
+  | <b>Price:</b> Rp{{ product.price }}
 </p>
 
 {% if product.thumbnail %}
