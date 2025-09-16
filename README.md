@@ -16,7 +16,7 @@ a Product model was defined with six required fields such as name, price, descri
 Tutorial 2 was clear and the teaching assistant is very helpful
 2.	Access the four URLs in point 2 using Postman, take screenshots of the URL access results in Postman, and add them to your README.md.
 
-![JSON](image/json.png)
-![XML](image/xml.png)
-![JSON_id](image/json_id.png)
-![XML_id](image/xml_id.png)
+![JSON](images/json.png)
+![XML](images/xml.png)
+![JSON_id](images/json_id.png)
+![XML_id](images/xml_id.png)
