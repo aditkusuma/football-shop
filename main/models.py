@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.auth.models import User
 
 class Product(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
     CATEGORY_CHOICES = [
         ('football_shirt', 'Football Shirt'),
     ]
@@ -14,6 +15,3 @@ class Product(models.Model):
 
     def __str__(self):
         return f"{self.name} ({self.category})"
-
-class News(models.Model):
-     user = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
