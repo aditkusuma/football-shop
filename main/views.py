@@ -13,22 +13,39 @@ from django.urls import reverse
 
 @login_required(login_url='/login')
 def show_main(request):
-    filter_type = request.GET.get("filter", "all")  # default 'all'
+    # existing "all" vs "mine" filter
+    filter_type = request.GET.get("filter", "all")  # "all" or "mine"
+    # new category filter (?category=football_shirt, etc.)
+    category_key = request.GET.get("category")
 
-    if filter_type == "all":
-        product_list = Product.objects.all()
-    else:
-        product_list = Product.objects.filter(user=request.user)
+    # start with all products
+    qs = Product.objects.all().select_related("user")
+
+    # apply "mine" filter if requested
+    if filter_type != "all":
+        if request.user.is_authenticated:
+            qs = qs.filter(user=request.user)
+        else:
+            qs = qs.none()
+
+    # apply category filter if valid key provided
+    if category_key:
+        valid_keys = {k for k, _ in Product.CATEGORY_CHOICES}
+        if category_key in valid_keys:
+            qs = qs.filter(category=category_key)
+
     context = {
-        'npm' : '2406265231',
+        'npm': '2406365231',
         'name': 'Raditya Ikhlas Kusuma',
         'class': 'PBP KKI',
-        "product_list": product_list,
-        'last_login': request.COOKIES.get('last_login', 'Never')
+        'product_list': qs,
+        'last_login': request.COOKIES.get('last_login', 'Never'),
+        'filter_type': filter_type,          # optional: for UI toggles
+        'active_category': category_key,     # for highlighting in navbar/menu
     }
     return render(request, "main.html", context)
 
-def add_product(request):
+def create_product(request):
     form = ProductForm(request.POST or None)
 
     if form.is_valid() and request.method == "POST":
@@ -41,7 +58,7 @@ def add_product(request):
     return render(request, "create_product.html", context)
 
 @login_required(login_url='/login')
-def show_detail(request, id):
+def show_product(request, id):
     product = get_object_or_404(Product, pk=id)
 
     context = {
@@ -83,6 +100,24 @@ def logout_user(request):
     response = HttpResponseRedirect(reverse('main:login'))
     response.delete_cookie('last_login')
     return response
+
+def edit_product(request, id):
+    product = get_object_or_404(Product, pk=id)
+    form = ProductForm (request.POST or None, instance=product)
+    if form.is_valid() and request.method == 'POST':
+        form.save()
+        return redirect('main:show_main')
+
+    context = {
+        'form': form
+    }
+
+    return render(request, "edit_product.html", context)
+
+def delete_product(request, id):
+    product = get_object_or_404(Product, pk=id)
+    product.delete()
+    return HttpResponseRedirect(reverse('main:show_main'))
 
 def show_xml(request):
     data = Product.objects.all()

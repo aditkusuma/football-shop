@@ -5,6 +5,9 @@ class Product(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
     CATEGORY_CHOICES = [
         ('football_shirt', 'Football Shirt'),
+        ('football_shoe', 'Football Shoe'),
+        ('football_hat', 'Football Hat'),
+        ('football_accessories', 'Football Accessories'),
     ]
     name = models.CharField(max_length=100)
     price = models.IntegerField()
