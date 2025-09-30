@@ -1,8 +1,8 @@
 {% load static humanize %}
 
-<article class="bg-white rounded-xl border border-gray-200 hover:shadow-md transition-all duration-200 overflow-hidden">
+<article class="bg-white rounded-xl border border-gray-200 hover:shadow-md transition-all duration-200 overflow-hidden h-full flex flex-col">
   <!-- Always side-by-side -->
-  <div class="flex flex-row items-stretch">
+  <div class="flex flex-row items-stretch flex-1">
     <!-- Thumbnail (left) -->
     <a href="{% url 'main:show_product' product.id %}"
        class="w-40 md:w-56 lg:w-64 relative block self-stretch">
@@ -26,20 +26,23 @@
     </a>
 
     <!-- Text (right) -->
-    <div class="flex-1 p-4 sm:p-5">
-      <h3 class="text-lg font-semibold text-gray-900 leading-snug mb-1">
-        <a href="{% url 'main:show_product' product.id %}" class="hover:text-blue-600">
-          {{ product.name }}
-        </a>
-      </h3>
+    <div class="flex-1 p-4 sm:p-5 flex flex-col justify-between">
+      <div>
+        <h3 class="text-lg font-semibold text-gray-900 leading-snug mb-1">
+          <a href="{% url 'main:show_product' product.id %}" class="hover:text-blue-600">
+            {{ product.name }}
+          </a>
+        </h3>
 
-      <div class="text-base font-semibold text-gray-900 mb-2">
-        Rp {{ product.price|intcomma }}
+        <div class="text-base font-semibold text-gray-900 mb-2">
+          Rp {{ product.price|intcomma }}
+        </div>
+
+        <!-- Clamp deskripsi supaya maksimal 3 baris -->
+        <p class="text-gray-600 text-sm leading-relaxed line-clamp-3 mb-3">
+          {{ product.description|truncatewords:24 }}
+        </p>
       </div>
-
-      <p class="text-gray-600 text-sm leading-relaxed line-clamp-3 mb-3">
-        {{ product.description|truncatewords:24 }}
-      </p>
 
       <div class="pt-3 border-t border-gray-100 flex items-center justify-between">
         <a href="{% url 'main:show_product' product.id %}" class="text-blue-600 hover:text-blue-700 font-medium text-sm">
