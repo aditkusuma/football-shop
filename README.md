@@ -75,3 +75,20 @@ Flexbox is a one-dimensional layout system for aligning elements along a row or 
 
 7. Implementation Steps: Explain how you implemented the above checklist step-by-step (not just following the tutorial)
 first I implemented the Django view logic and URL routing for edit/delete, tested them manually, next I refactored existing templates to include a base layout and inserted the responsive <meta viewport> tag, then I integrated Tailwind (or CSS framework) and global CSS, writing custom styles, media queries, and utility classes as needed after that I built the responsive navbar with mobile toggling, with a context_processors registered to settings.py so that the catagories can be read in all of the templates. I then edit the show_main so that it filter through the catagories as well. The navbar uses Tailwind classes and a hover group to show/hide a dropdown and linked all the catagories. I then redesigned each page template (login, register, product add/edit, list, detail) using flex/grid and card layouts finally I tested across screen sizes (mobile, tablet, desktop), iterated fixes (overflow, spacing, breakpoints)
+
+Assignment 6
+
+1. What is the difference between synchronous request and asynchronous request?
+A synchronous request blocks the UI: the browser navigates or reloads the page and you wait until the server responds before anything else continues. An asynchronous request (AJAX/fetch) is sent in the background; the page stays interactive, and when the response arrives a callback/promise updates only the needed part of the DOM without a full reload.
+
+2. How does AJAX work in Django (request–response flow)?
+Client JS (e.g., fetch/XMLHttpRequest) sends an HTTP request to a Django URL (often POST/GET with JSON/FormData and a CSRF header for unsafe methods). Django’s URLconf routes it to a view that validates input, performs business logic (queries/models/auth), and returns a lightweight response—commonly JSON (JsonResponse) or an HTML snippet. The client receives the data, checks for success/errors, and updates the DOM (insert cards, change counts, show toasts) without re-rendering the whole template.
+
+3. What are the advantages of using AJAX compared to regular rendering in Django?
+AJAX reduces full-page reloads, yielding faster perceived performance, lower bandwidth, and smoother interactions (inline create/update/delete, live filters, infinite scroll). It enables more responsive UIs and finer-grained error handling (field level messages) while letting the server stay as the single source of truth. You also decouple data from presentation: Django returns JSON, and the front end renders it, easing reuse across components or pages.
+
+4. How do you ensure security when using AJAX for Login and Register features in Django?
+Always use HTTPS, include and verify CSRF tokens for POST (set X-CSRFToken header), and rely on Django’s auth/validators server-side (never trust client checks). Use HttpOnly, Secure, SameSite cookies for sessions; throttle or rate-limit login attempts, and consider CAPTCHA after repeated failures. Sanitize/validate all inputs, return generic error messages (avoid leaking which field is “correct”), and on success rotate the session (login() handles this) to prevent fixation. Lock down CORS (same-origin by default) and avoid exposing sensitive data in JSON.
+
+5. How does AJAX affect user experience (UX) on websites?
+AJAX makes interfaces feel instant and fluid: actions happen in place, forms validate inline, and content updates without jarring reloads, which lowers cognitive load and keeps context. With good UI cues (loading states, disabled buttons, optimistic updates, and toasts), users get faster feedback and higher task completion rates. Poorly implemented AJAX (no spinners, silent failures, inaccessible controls) harms UX—so clear states, error surfaces, and keyboard/screen-reader support are essential.

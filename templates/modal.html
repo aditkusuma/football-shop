@@ -1,0 +1,239 @@
+<!-- Modal -->
+<div id="crudModal" class="hidden fixed inset-0 z-50 w-full flex items-center justify-center bg-gray-800 bg-opacity-50">
+  <div id="crudModalContent" class="bg-white rounded-lg shadow-lg w-5/6 sm:w-3/5 md:w-1/2 lg:w-2/5 xl:w-1/3 max-h-screen overflow-y-auto">
+    <!-- Modal header -->
+    <div class="flex items-center justify-between p-4 border-b">
+      <div>
+        <h3 id="modalTitle" class="text-xl font-semibold text-gray-900">
+          Create New Product
+        </h3>
+        <p id="modalSubtitle" class="text-sm text-gray-600 mt-1">Share your football product and stories with the community</p>
+      </div>
+      <button type="button" class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm p-1.5 ml-auto inline-flex items-center" onclick="hideModal()">
+        <svg aria-hidden="true" class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+          <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+        </svg>
+        <span class="sr-only">Close modal</span>
+      </button>
+    </div>
+    <!-- Modal body -->
+    <div class="px-6 py-4 space-y-6 form-style">
+      <form id="productForm">
+        <div class="mb-4">
+          <label for="name" class="block text-sm font-medium text-gray-700">Name</label>
+          <input type="text" id="name" name="name" class="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-green-500 focus:border-transparent" placeholder="Enter product name" required>
+        </div>
+        <div class="mb-4">
+          <label for="description" class="block text-sm font-medium text-gray-700">Description</label>
+          <textarea id="description" name="description" rows="3" class="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-green-500 focus:border-transparent" placeholder="Enter product description" required></textarea>
+        </div>
+        <div class="mb-4">
+          <label for="category" class="block text-sm font-medium text-gray-700">Category</label>
+          <select id="category" name="category" class="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-green-500 focus:border-transparent" required>
+            <option value="">Choose a category</option>
+            <option value="football_shirt">Football Shirt</option>
+            <option value="football_shoe">Football Shoe</option>
+            <option value="football_hat">Football Hat</option>
+            <option value="football_accessories">Football Accessories</option>
+          </select>
+        </div>
+        <div class="mb-4">
+          <label for="thumbnail" class="block text-sm font-medium text-gray-700">Thumbnail URL</label>
+          <input type="url" id="thumbnail" name="thumbnail" class="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-green-500 focus:border-transparent" placeholder="https://example.com/image.jpg">
+        </div>
+        <div class="mb-4">
+          <label for="price" class="block text-sm font-medium text-gray-700">Price</label>
+          <input type="number" id="price" name="price" step="0.01" min="0" class="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-green-500 focus:border-transparent" placeholder="Enter price" required>
+        </div>
+        <div class="mb-4">
+          <div class="flex items-center">
+            <input id="is_featured" name="is_featured" type="checkbox" class="w-4 h-4 text-green-600 bg-gray-100 border-gray-300 rounded focus:ring-green-500">
+            <label for="is_featured" class="ml-2 text-sm font-medium text-gray-900">Featured Product</label>
+          </div>
+        </div>
+      </form>
+    </div>
+    <!-- Modal footer -->
+    <div class="flex flex-col sm:flex-row gap-4 p-6 border-t border-gray-200 rounded-b">
+      <button type="button" id="cancelButton" class="order-2 sm:order-1 px-6 py-3 border border-gray-300 text-gray-700 rounded-md font-medium hover:bg-gray-50 transition-colors text-center" onclick="hideModal()">Cancel</button>
+      <button type="submit" id="submitProduct" form="productForm" class="order-1 sm:order-2 flex-1 bg-green-600 text-white px-6 py-3 rounded-md font-medium hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">Add Product</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Modal state
+  let isEditMode = false;
+  let editProductId = null;
+
+  function showModal() {
+      const modal = document.getElementById('crudModal');
+      const modalContent = document.getElementById('crudModalContent');
+
+      modal.classList.remove('hidden'); 
+      setTimeout(() => {
+        modalContent.classList.remove('opacity-0', 'scale-95');
+        modalContent.classList.add('opacity-100', 'scale-100');
+      }, 50); 
+  }
+
+  function hideModal() {
+      const modal = document.getElementById('crudModal');
+      const modalContent = document.getElementById('crudModalContent');
+
+      modalContent.classList.remove('opacity-100', 'scale-100');
+      modalContent.classList.add('opacity-0', 'scale-95');
+
+      setTimeout(() => {
+        modal.classList.add('hidden');
+        resetModalToCreate();
+      }, 150); 
+  }
+
+  async function showEditModal(productId) {
+      try {
+          // Fetch product data
+          const response = await fetch(`{% url 'main:show_json_by_id' 999999 %}`.replace('999999', productId));
+          if (!response.ok) {
+              throw new Error('Failed to fetch product data');
+          }
+          
+          const product = await response.json();
+          
+          // Fill form with product data
+          const form = document.getElementById('productForm');
+          form.elements['name'].value = product.name;
+          form.elements['description'].value = product.description;
+          form.elements['category'].value = product.category;
+          form.elements['thumbnail'].value = product.thumbnail || '';
+          form.elements['price'].value = product.price;
+          form.elements['is_featured'].checked = product.is_featured;
+
+          // Set edit mode
+          isEditMode = true;
+          editProductId = productId;
+
+          // Update modal UI
+          document.getElementById('modalTitle').textContent = 'Edit Product';
+          document.getElementById('modalSubtitle').textContent = 'Update your product information';
+          document.getElementById('submitProduct').textContent = 'Save Changes';
+
+          showModal();
+      } catch (error) {
+          console.error('Error loading product:', error);
+          showToast('Error', 'Failed to load product data', 'error');
+      }
+  }
+
+  function resetModalToCreate() {
+      const form = document.getElementById('productForm');
+      form.reset();
+      
+      // Reset edit mode
+      isEditMode = false;
+      editProductId = null;
+
+      // Reset modal UI
+      document.getElementById('modalTitle').textContent = 'Create New Product';
+      document.getElementById('modalSubtitle').textContent = 'Share your football product and stories with the community';
+      document.getElementById('submitProduct').textContent = 'Add Product';
+  }
+
+  function getCookie(name) {
+      let cookieValue = null;
+      if (document.cookie && document.cookie !== '') {
+          const cookies = document.cookie.split(';');
+          for (let i = 0; i < cookies.length; i++) {
+              const cookie = cookies[i].trim();
+              if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                  cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                  break;
+              }
+          }
+      }
+      return cookieValue;
+  }
+
+  async function addProductEntry() {
+      try {
+          const form = document.getElementById('productForm');
+          const formData = new FormData(form);
+          const csrftoken = getCookie('csrftoken');
+          const submitButton = document.getElementById('submitProduct');
+
+          // Disable submit button
+          submitButton.disabled = true;
+          submitButton.textContent = 'Saving...';
+
+          // Basic validation
+          const name = formData.get('name');
+          const description = formData.get('description');
+          const category = formData.get('category');
+          const price = formData.get('price');
+
+          if (!name || !description || !category || !price) {
+              throw new Error('Please fill in all required fields');
+          }
+
+          // Determine URL and method based on mode
+          let url, successMessage;
+          if (isEditMode) {
+              url = `{% url 'main:update_product_entry_ajax' 999999 %}`.replace('999999', editProductId);
+              successMessage = 'Product updated successfully!';
+          } else {
+              url = "{% url 'main:add_product_entry_ajax' %}";
+              successMessage = 'Product added successfully!';
+          }
+
+          // Send data to server
+          const response = await fetch(url, {
+              method: "POST",
+              headers: {
+                  'X-CSRFToken': csrftoken,
+              },
+              body: formData
+          });
+
+          const data = await response.json();
+
+          if (!response.ok) {
+              console.error('Update failed payload:', data);
+              if (data.errors) {
+                  const errorMessages = Object.entries(data.errors)
+                      .map(([field, errors]) => `${field}: ${errors.join(', ')}`)
+                      .join('\n');
+                  throw new Error(errorMessages);
+              }
+              throw new Error(data.error || 'Failed to save product');
+          }
+
+          // Success
+          hideModal();
+          showToast('Success', successMessage, 'success');
+          
+          // Dispatch event to refresh product list
+          document.dispatchEvent(new CustomEvent('productAdded'));
+          document.dispatchEvent(new CustomEvent('productsChanged'));
+          
+      } catch (error) {
+          console.error('Error saving product:', error);
+          showToast('Error', error.message, 'error');
+          
+          // Re-enable submit button
+          const submitButton = document.getElementById('submitProduct');
+          submitButton.disabled = false;
+          submitButton.textContent = isEditMode ? 'Save Changes' : 'Add Product';
+      }
+
+      return false;
+  }
+
+  // Add event listener to form
+  document.getElementById("productForm").addEventListener("submit", function(e) {
+      e.preventDefault();
+      addProductEntry();
+  });
+
+  // Make showEditModal globally accessible for inline onclick handlers
+  window.showEditModal = showEditModal;
+</script>

@@ -1,0 +1,94 @@
+<div class="form-style">
+  <div class="min-h-screen bg-gray-50 flex items-center justify-center p-8">
+    <div class="max-w-md w-full relative z-10">
+      <div class="bg-white border border-gray-200 rounded-lg p-8 shadow-sm">
+        <div class="text-center mb-8">
+          <h2 class="text-2xl font-semibold text-gray-900 mb-2">Join Us</h2>
+          <p class="text-gray-500">Create your Chelsea Football Shop account</p>
+        </div>
+
+        <div id="register-error" class="mb-6 hidden">
+          <div class="px-4 py-3 rounded text-sm border bg-red-50 border-red-200 text-red-700" id="register-error-msg"></div>
+        </div>
+        <div id="register-success" class="mb-6 hidden">
+          <div class="px-4 py-3 rounded text-sm border bg-blue-50 border-blue-200 text-blue-700" id="register-success-msg"></div>
+        </div>
+
+        <form id="register-form" class="space-y-5">
+          {% csrf_token %}
+          <div>
+            <label for="username" class="block text-sm font-medium text-gray-700 mb-2">Username</label>
+            <input 
+              id="username" 
+              name="username" 
+              type="text" 
+              required 
+              class="w-full px-4 py-3 border border-gray-300 rounded focus:outline-none focus:border-blue-500 transition duration-200" 
+              placeholder="Choose a username">
+          </div>
+
+          <div>
+            <label for="password1" class="block text-sm font-medium text-gray-700 mb-2">Password</label>
+            <input 
+              id="password1" 
+              name="password1" 
+              type="password" 
+              required 
+              class="w-full px-4 py-3 border border-gray-300 rounded focus:outline-none focus:border-blue-500 transition duration-200" 
+              placeholder="Create a password">
+          </div>
+
+          <div>
+            <label for="password2" class="block text-sm font-medium text-gray-700 mb-2">Confirm Password</label>
+            <input 
+              id="password2" 
+              name="password2" 
+              type="password" 
+              required 
+              class="w-full px-4 py-3 border border-gray-300 rounded focus:outline-none focus:border-blue-500 transition duration-200" 
+              placeholder="Confirm your password">
+          </div>
+
+          <button 
+            type="submit" 
+            class="w-full bg-blue-600 text-white font-medium py-3 px-4 rounded hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition duration-200">
+            Create Account
+          </button>
+        </form>
+
+        <div class="mt-6 text-center">
+          <p class="text-gray-500 text-sm">
+            Already have an account? 
+            <a href="{% url 'main:login' %}" class="text-blue-600 hover:text-blue-700 font-medium">
+              Sign In
+            </a>
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+document.getElementById("register-form").addEventListener("submit", async function(e) {
+  e.preventDefault();
+  const form = e.target;
+  const formData = new FormData(form);
+  const res = await fetch("{% url 'main:register_user_ajax' %}", {
+    method: "POST",
+    body: formData,
+  });
+  const data = await res.json();
+  if (data.ok) {
+    document.getElementById("register-error").classList.add("hidden");
+    document.getElementById("register-success").classList.remove("hidden");
+    document.getElementById("register-success-msg").textContent = "Registration successful! You can now login.";
+    setTimeout(() => {
+      window.location.href = "{% url 'main:login' %}";
+    }, 1500);
+  } else {
+    document.getElementById("register-success").classList.add("hidden");
+    document.getElementById("register-error").classList.remove("hidden");
+    document.getElementById("register-error-msg").textContent = Object.values(data.errors).flat().join(" ");
+  }
+});
+</script>

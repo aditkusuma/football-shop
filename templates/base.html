@@ -4,11 +4,65 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    {% block meta %} {% endblock meta %}
+
+    {% block meta %}{% endblock meta %}
+
+    <!-- Tailwind + global styles -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="{% static 'css/global.css' %}"/>
+    <link rel="stylesheet" href="{% static 'css/global.css' %}" />
+
+    {% block extra_head %}{% endblock extra_head %}
   </head>
-  <body>
-    {% block content %} {% endblock content %}
+  <body class="bg-gray-50 text-gray-900">
+    {% block content %}{% endblock content %}
+
+    {# Toast UI; toast.js is loaded inside this include #}
+    {% include 'toast.html' %}
+
+    {# Modals you already use elsewhere #}
+    {% include 'modal.html' %}
+    {% include 'delete_modal.html' %}
+
+    {# --- Logout Option B: show toast first, then submit a real POST --- #}
+    <form id="logout-form" action="{% url 'main:logout' %}" method="post" class="hidden">
+      {% csrf_token %}
+    </form>
+
+    <script>
+      document.addEventListener('DOMContentLoaded', function () {
+        // Ensure toast is available
+        if (typeof window.showToast !== 'function') {
+          console.warn('showToast not found. Make sure toast.html includes toast.js and appears before this script.');
+        }
+
+        // Intercept ANY link pointing to your logout URL (desktop & mobile)
+        const selector = 'a[href="{% url "main:logout" %}"]';
+
+        // Event delegation covers links added later (e.g., mobile menus)
+        document.body.addEventListener('click', function (e) {
+          const a = e.target.closest(selector);
+          if (!a) return;
+
+          e.preventDefault();
+
+          if (typeof showToast === 'function') {
+            // Show toast on the current page
+            showToast('Logged out', 'See you next time!', 'success', 1200);
+          }
+
+          // Submit real logout (POST) shortly after
+          setTimeout(function () {
+            const form = document.getElementById('logout-form');
+            if (!form) {
+              console.error('Logout form not found');
+              return;
+            }
+            form.submit();
+          }, 900);
+        });
+      });
+    </script>
+
+    {% block extra_scripts %}{% endblock extra_scripts %}
   </body>
 </html>

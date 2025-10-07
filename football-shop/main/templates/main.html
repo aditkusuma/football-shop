@@ -1,0 +1,117 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block meta %}
+<title>Chelsea Football Shop</title>
+{% endblock meta %}
+
+{% block content %}
+{% include 'navbar.html' %}
+<div class="bg-gray-50 w-full pt-16 min-h-screen">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+    <!-- Header -->
+    <div class="mb-8">
+      <h1 class="text-3xl font-bold text-gray-900 mb-2">Latest Chelsea Football Shop</h1>
+      <p class="text-gray-600">Manage and explore your Chelsea football products</p>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="flex flex-wrap gap-3 mb-6">
+      <button onclick="showModal()" 
+              class="inline-flex items-center px-4 py-2 bg-white text-green-600 font-semibold outline outline-2 outline-green-600 rounded-md hover:bg-green-600 hover:text-white transition-colors">
+        + Create Product (AJAX)
+      </button>
+
+      <button id="btn-refresh"
+              class="inline-flex items-center px-4 py-2 bg-white text-green-600 font-semibold outline outline-2 outline-green-600 rounded-md hover:bg-green-600 hover:text-white transition-colors">
+        Refresh Products
+      </button>
+    </div>
+
+    <!-- Loading State -->
+    <div id="loading" class="bg-white rounded-lg border border-gray-200 p-12 text-center hidden">
+      <svg class="animate-spin h-8 w-8 text-green-600 inline-block" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+      </svg>
+      <p class="text-gray-600 mt-3">Loading products...</p>
+    </div>
+
+    <!-- Error -->
+    <div id="error" class="hidden text-center text-red-600 mt-8"></div>
+
+    <!-- Product Grid -->
+    <div id="grid" class="hidden grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+
+    <!-- Empty -->
+    <div id="empty" class="bg-white rounded-lg border border-gray-200 p-12 text-center hidden">
+      <div class="w-32 h-32 mx-auto mb-4"></div>
+      <h3 class="text-lg font-medium text-gray-900 mb-2">No products found</h3>
+      <p class="text-gray-500 mb-6">Be the first to add a Chelsea football product.</p>
+      <button onclick="showModal()" class="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors">
+        Add Product
+      </button>
+    </div>
+
+  </div>
+</div>
+
+<script>
+const PRODUCT_API_ENDPOINT = "{% url 'main:get_products_ajax' %}";
+const loadingSpinner = document.getElementById("loading");
+const errorMessage = document.getElementById("error");
+const emptyStateDisplay = document.getElementById("empty");
+const productGrid = document.getElementById("grid");
+const refreshButton = document.getElementById("btn-refresh");
+
+function toggleView({loading=false, error=false, empty=false, grid=false}) {
+  loadingSpinner.classList.toggle("hidden", !loading);
+  errorMessage.classList.toggle("hidden", !error);
+  emptyStateDisplay.classList.toggle("hidden", !empty);
+  productGrid.classList.toggle("hidden", !grid);
+}
+
+// Read (AJAX GET)
+async function loadProducts() {
+  toggleView({loading:true});
+  try {
+    const res = await fetch(PRODUCT_API_ENDPOINT);
+    if (!res.ok) throw new Error("Network error");
+    const data = await res.json();
+
+    if (!data || data.length === 0) {
+      toggleView({empty:true});
+      return;
+    }
+
+    productGrid.innerHTML = data.map(cardHTML).join("");
+    toggleView({grid:true});
+  } catch (err) {
+    console.error(err);
+    errorMessage.textContent = "Failed to load products.";
+    toggleView({error:true});
+  }
+}
+
+// Build Product Card
+function cardHTML(p) {
+  return `
+  <article class="bg-white rounded-xl border border-gray-200 hover:shadow-md transition-all duration-200 overflow-hidden">
+    <div class="flex flex-row items-stretch">
+      <a href="/detail/${p.id}/" class="w-40 md:w-56 lg:w-64 relative block self-stretch">
+        <img src="${p.thumbnail}" alt="${p.name}" class="w-full h-full object-cover">
+      </a>
+      <div class="flex-1 p-4">
+        <h2 class="text-lg font-semibold text-gray-900">${p.name}</h2>
+        <p class="text-gray-600">${p.description}</p>
+        <p class="text-gray-900 font-bold">${p.price} USD</p>
+      </div>
+    </div>
+  </article>`;
+}
+
+// Init
+document.addEventListener("DOMContentLoaded", loadProducts);
+refreshButton?.addEventListener("click", loadProducts);
+</script>
+{% endblock content %}

@@ -152,6 +152,13 @@ if DEBUG:
 else:
     STATIC_ROOT = BASE_DIR / 'static' # refers to /static root project in production mode
 
+# Media (for uploaded product thumbnails)
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
+
+# Timezone
+TIME_ZONE = 'Asia/Jakarta'
+USE_TZ = True
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field

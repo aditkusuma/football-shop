@@ -1,7 +1,73 @@
 {% extends 'base.html' %}
 
 {% block meta %}
-<title>Register - Chelsea Football Shop</title>
+<t          <input 
+            id="password2" 
+            name="password2" 
+            type="password" 
+            required 
+            class="w-full px-4 py-3 border border-gray-300 rounded focus:outline-none focus:border-blue-500 transition duration-200" 
+            placeholder="Confirm Password">
+        </div>
+
+        <button 
+          type="submit" 
+          class="w-full bg-blue-600 text-white font-medium py-3 px-4 rounded hover:bg-blue-700 transition duration-200">
+          Create Account
+        </button>
+      </form>
+
+      <div class="mt-6 text-center">
+        <p class="text-gray-600">
+          Already have an account? 
+          <a href="{% url 'main:login' %}" class="text-blue-600 hover:text-blue-700 font-medium">Sign in</a>
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+document.getElementById('register-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(this);
+    fetch("{% url 'main:register_user_ajax' %}", {
+        method: "POST",
+        body: formData,
+        credentials: 'same-origin'
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.ok) {
+            // Show success message
+            const successDiv = document.getElementById('register-success');
+            const successMsg = document.getElementById('register-success-msg');
+            successDiv.classList.remove('hidden');
+            successMsg.textContent = 'Account created successfully! Redirecting to login...';
+            
+            // Show success toast
+            showToast('Registration successful!', 'success');
+            
+            // Redirect to login page after a short delay
+            setTimeout(() => {
+                window.location.href = "{% url 'main:login' %}";
+            }, 2000);
+        } else {
+            // Show error message
+            const errorDiv = document.getElementById('register-error');
+            const errorMsg = document.getElementById('register-error-msg');
+            errorDiv.classList.remove('hidden');
+            errorMsg.textContent = Object.values(data.errors).flat().join(' ');
+            showToast('Registration failed. Please check the form.', 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showToast('An error occurred. Please try again.', 'error');
+    });
+});
+</script>Register - Chelsea Football Shop</title>
 {% endblock meta %}
 
 {% block content %}
@@ -14,34 +80,15 @@
         <p class="text-gray-500">Create your Chelsea Football Shop account</p>
       </div>
 
-      <!-- Form Errors Display -->
-      {% if form.non_field_errors %}
-        <div class="mb-6">
-          {% for error in form.non_field_errors %}
-            <div class="px-4 py-3 rounded text-sm border bg-red-50 border-red-200 text-red-700">
-              {{ error }}
-            </div>
-          {% endfor %}
-        </div>
-      {% endif %}
+      <div id="register-error" class="mb-6 hidden">
+        <div class="px-4 py-3 rounded text-sm border bg-red-50 border-red-200 text-red-700" id="register-error-msg"></div>
+      </div>
+      <div id="register-success" class="mb-6 hidden">
+        <div class="px-4 py-3 rounded text-sm border bg-blue-50 border-blue-200 text-blue-700" id="register-success-msg"></div>
+      </div>
 
-      {% if form.errors %}
-        <div class="mb-6">
-          {% for field, errors in form.errors.items %}
-            {% if field != '__all__' %}
-              {% for error in errors %}
-                <div class="px-4 py-3 rounded text-sm border bg-red-50 border-red-200 text-red-700 mb-2">
-                  <strong>{{ field|title }}:</strong> {{ error }}
-                </div>
-              {% endfor %}
-            {% endif %}
-          {% endfor %}
-        </div>
-      {% endif %}
-
-      <form method="POST" action="" class="space-y-5">
+      <form id="register-form" class="space-y-5">
         {% csrf_token %}
-        
         <div>
           <label for="username" class="block text-sm font-medium text-gray-700 mb-2">Username</label>
           <input 
@@ -82,27 +129,6 @@
         </button>
       </form>
 
-      <!-- Messages Display -->
-      {% if messages %}
-        <div class="mt-6">
-          {% for message in messages %}
-            <div 
-              class="
-                px-4 py-3 rounded text-sm border
-                {% if message.tags == 'success' %}
-                  bg-blue-50 border-blue-200 text-blue-700
-                {% elif message.tags == 'error' %}
-                  bg-red-50 border-red-200 text-red-700
-                {% else %}
-                  bg-gray-50 border-gray-200 text-gray-700
-                {% endif %}
-              ">
-              {{ message }}
-            </div>
-          {% endfor %}
-        </div>
-      {% endif %}
-
       <div class="mt-6 text-center">
         <p class="text-gray-500 text-sm">
           Already have an account? 
@@ -115,4 +141,41 @@
     </div>
   </div>
 </div>
+<script>
+document.getElementById('register-form').addEventListener('submit', async function (e) {
+  e.preventDefault();
+
+  const formData = new FormData(this);
+  try {
+    const res = await fetch("{% url 'main:register_user_ajax' %}", {
+      method: "POST",
+      body: formData,
+      credentials: "same-origin",
+    });
+    const data = await res.json();
+
+    if (data.ok) {
+      // optional inline success box
+      document.getElementById("register-error").classList.add("hidden");
+      document.getElementById("register-success").classList.remove("hidden");
+      document.getElementById("register-success-msg").textContent = "Account created! Redirecting to sign in...";
+
+      // toast on THIS page, then go to login
+      showToast("Registration successful", "You can now sign in.", "success", 1500);
+      setTimeout(() => {
+        window.location.href = "{% url 'main:login' %}";
+      }, 1200);
+    } else {
+      document.getElementById("register-success").classList.add("hidden");
+      document.getElementById("register-error").classList.remove("hidden");
+      document.getElementById("register-error-msg").textContent = Object.values(data.errors).flat().join(" ");
+      showToast("Registration failed", "Please fix the highlighted errors.", "error");
+    }
+  } catch (err) {
+    console.error(err);
+    showToast("Error", "Something went wrong. Please try again.", "error");
+  }
+});
+</script>
+
 {% endblock content %}

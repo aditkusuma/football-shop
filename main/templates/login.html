@@ -13,34 +13,12 @@
         <p class="text-gray-600">Welcome back to Chelsea Football Shop</p>
       </div>
 
-      <!-- Form Errors Display -->
-      {% if form.non_field_errors %}
-        <div class="mb-6">
-          {% for error in form.non_field_errors %}
-            <div class="px-4 py-3 rounded-md text-sm border bg-red-50 border-red-200 text-red-700">
-              {{ error }}
-            </div>
-          {% endfor %}
-        </div>
-      {% endif %}
+      <div id="login-error" class="mb-6 hidden">
+        <div class="px-4 py-3 rounded-md text-sm border bg-red-50 border-red-200 text-red-700" id="login-error-msg"></div>
+      </div>
 
-      {% if form.errors %}
-        <div class="mb-6">
-          {% for field, errors in form.errors.items %}
-            {% if field != '__all__' %}
-              {% for error in errors %}
-                <div class="px-4 py-3 rounded-md text-sm border bg-red-50 border-red-200 text-red-700 mb-2">
-                  <strong>{{ field|title }}:</strong> {{ error }}
-                </div>
-              {% endfor %}
-            {% endif %}
-          {% endfor %}
-        </div>
-      {% endif %}
-
-      <form method="POST" action="" class="space-y-6">
+      <form id="login-form" class="space-y-6">
         {% csrf_token %}
-        
         <div>
           <label for="username" class="block text-sm font-medium text-gray-700 mb-2">Username</label>
           <input 
@@ -70,26 +48,50 @@
         </button>
       </form>
 
-      <!-- Messages Display -->
-      {% if messages %}
-        <div class="mt-6">
-          {% for message in messages %}
-            <div 
-              class="
-                px-4 py-3 rounded-md text-sm border
-                {% if message.tags == 'success' %}
-                  bg-blue-50 border-blue-200 text-blue-700
-                {% elif message.tags == 'error' %}
-                  bg-red-50 border-red-200 text-red-700
-                {% else %}
-                  bg-gray-50 border-gray-200 text-gray-700
-                {% endif %}
-              ">
-              {{ message }}
-            </div>
-          {% endfor %}
-        </div>
-      {% endif %}
+      <div class="mt-6 text-center">
+        <p class="text-gray-600">
+          Don't have an account? 
+          <a href="{% url 'main:register' %}" class="text-blue-600 hover:text-blue-700 font-medium">Sign up</a>
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+document.getElementById('login-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(this);
+    fetch("{% url 'main:login_user_ajax' %}", {
+        method: "POST",
+        body: formData,
+        credentials: 'same-origin'
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.ok) {
+            // Show success toast
+            showToast('Successfully logged in!', 'success');
+            // Redirect to main page after a short delay
+            setTimeout(() => {
+                window.location.href = "{% url 'main:show_main' %}";
+            }, 1000);
+        } else {
+            // Show error message
+            const errorDiv = document.getElementById('login-error');
+            const errorMsg = document.getElementById('login-error-msg');
+            errorDiv.classList.remove('hidden');
+            errorMsg.textContent = Object.values(data.errors).flat().join(' ');
+            showToast('Login failed. Please check your credentials.', 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showToast('An error occurred. Please try again.', 'error');
+    });
+});
+</script>
 
       <div class="mt-6 text-center pt-6 border-t border-gray-200">
         <p class="text-gray-500 text-sm">
@@ -102,4 +104,34 @@
     </div>
   </div>
 </div>
+<script>
+document.getElementById('login-form').addEventListener('submit', async function (e) {
+  e.preventDefault();
+
+  const formData = new FormData(this);
+  try {
+    const res = await fetch("{% url 'main:login_user_ajax' %}", {
+      method: "POST",
+      body: formData,
+      credentials: "same-origin",
+    });
+    const data = await res.json();
+
+    if (data.ok) {
+      // toast on THIS page, then redirect shortly after
+      showToast("Logged in", "Welcome back!", "success", 1200);
+      setTimeout(() => {
+        window.location.href = "{% url 'main:show_main' %}";
+      }, 1000);
+    } else {
+      document.getElementById("login-error").classList.remove("hidden");
+      document.getElementById("login-error-msg").textContent = Object.values(data.errors).flat().join(" ");
+      showToast("Login failed", "Please check your username/password.", "error");
+    }
+  } catch (err) {
+    console.error(err);
+    showToast("Error", "Something went wrong. Please try again.", "error");
+  }
+});
+</script>
 {% endblock content %}
